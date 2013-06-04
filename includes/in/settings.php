@@ -30,7 +30,7 @@
    </div>
 
    <div class="align-center padded">
-      <input type="submit" name="register" value="Register" />
+      <input type="submit" name="register" value="Save Settings" />
    </div>
       
 </form>
