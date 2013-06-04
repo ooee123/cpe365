@@ -1,0 +1,35 @@
+{
+  "name": "GroundworkCSS",
+  "version": "1.7.2",
+  "description": "GroundworkCSS is a fully responsive HTML5, CSS and Javascript toolkit created by @ghepting",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.3.1",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-jade": "~0.5.0",
+    "grunt-contrib-sass": "~0.3.0",
+    "grunt-contrib-compass": "~0.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:groundworkcss/groundwork.git"
+  },
+  "keywords": [
+    "groundworkcss",
+    "groundwork",
+    "responsive",
+    "framework",
+    "grid",
+    "fluid",
+    "css",
+    "sass",
+    "scss",
+    "coffeescript",
+    "javascript",
+    "jquery"
+  ],
+  "author": "Gary Hepting",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "b6af665aeb7e035b8280b6827554120d476d3edb"
+}
