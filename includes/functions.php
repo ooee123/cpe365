@@ -149,6 +149,7 @@ function formatValues($attArray, $typeArray) {
  */
 
 function constructWhere() {
+   $fAccount = clean($_GET['id']);
    $fMonth = clean($_GET['month']);
    $fYear = clean($_GET['year']);
    $fAmount = clean($_GET['amt']);
@@ -180,7 +181,7 @@ function constructOrder() {
 }
 
 function whereAccId($fAccount) {
-   if (!empty($fAccount) && $fAccount != "Any")
+   if (!empty($fAccount))
       return " AND accId = " . $fAccount;
 }
 
@@ -195,7 +196,7 @@ function whereYear($fYear, $date) {
 }
 
 function whereMonth($fMonth, $date) {
-   if (!empty($fMonth) && $fMonth != "Any")
+   if (!empty($fMonth))
       return " AND MONTHNAME(" . $date . ") = '" . $fMonth . "'";
 }
 

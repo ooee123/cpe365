@@ -1,6 +1,6 @@
 <?php if ($include) { ?>
 
-<h2 class="AverageSans">Recent History</h2>
+<h2 class="AverageSans">Recent Transactions</h2>
 
 <table class="four fifths">
    <thead style="font-size: 12px;">
@@ -30,9 +30,7 @@ while ($row = mysql_fetch_array($result)) {
    $for = $row['paidToFrom'];
    $amount = amtToStrColor($row['amount']);
    $category = $row['category'];
-
 ?>
-
       <tr>
          <td><input type="checkbox" /></td>
          <td><?php echo $date; ?></td>
@@ -40,7 +38,6 @@ while ($row = mysql_fetch_array($result)) {
          <td><?php echo $amount; ?></td>
          <td><?php echo $category; ?></td>
       </tr>
-
 <?php } ?>
 
    </form>
