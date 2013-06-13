@@ -4,31 +4,23 @@ $page = $_GET['p'];
 $include = true;
 
 $path = 'includes/';
+$ext = '.php';
 
-$out_path = 'includes/out/';
-$out_list = array(
-   'login',
-   'register',
-   'verify'
-);
-
-$in_path = 'includes/in/';
-$in_list = array(
-   'summary',
-   'settings',
-   'logout'
-);
+$out_path = 'includes/logged-out/';
+$in_path = 'includes/logged-in/';
 
 require_once($path . 'db-connect.php');
 require_once($path . 'functions.php');
 
 session_start();
 
-if (!session_is_registered(this_id)) {
+if (!isset($_SESSION['this_id'])) {
    require_once($out_path . 'header.php');
 
-   if (in_array($page, $out_list))
-      include($out_path . $page . '.php');
+   $file = $out_path . $page . $ext;
+
+   if (file_exists($file))
+      include($file);
    else
       include($out_path . 'login.php');
 
@@ -37,8 +29,10 @@ if (!session_is_registered(this_id)) {
 else {
    require_once($in_path . 'header.php');
 
-   if (in_array($page, $in_list))
-      include($in_path . $page . '.php');
+   $file = $in_path . $page . $ext;
+
+   if (file_exists($file))
+      include($file);
    else
       include($in_path . 'summary.php');
 
