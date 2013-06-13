@@ -1,15 +1,32 @@
 <?php if ($include) {
 
 function getProgress($accId) {
-   $select = "SELECT SUM(t.amount) AS progress";
-   $from = " FROM Accounts a, Goals g, Transactions t";
-   $where = " WHERE t.payDate BETWEEN g.startDate AND g.endDate AND t.accId = a.accId AND g.goalId = a.goalId AND a.accId = " . $accId;
-   $query = $select . $from . $where;
+   $query = "SELECT accType FROM Accounts WHERE accId = " . $accId;
    $result = mysql_query($query);
-
    $row = mysql_fetch_array($result);
+   $accType = $row['accType'];
+   $where = " WHERE t.payDate BETWEEN g.startDate AND g.endDate AND t.accId = a.accId AND g.goalId = a.goalId AND a.accId = " . $accId;
+   $from = " FROM Accounts a, Goals g, Transactions t";
 
-   return $row['progress'];
+   if ($accType == "checking") {
+      $select = "SELECT ABS(SUM(t.amount)) AS progress";
+      $where = $where . " AND t.amount < 0";
+      $query = $select . $from . $where;
+      $result = mysql_query($query);
+
+      $row = mysql_fetch_array($result);
+
+      return $row['progress'];
+   }
+   else {
+      $select = "SELECT SUM(t.amount) AS progress";
+      $query = $select . $from . $where;
+      $result = mysql_query($query);
+
+      $row = mysql_fetch_array($result);
+
+      return $row['progress'];
+   }
 }
  
 function getGoal($accId) {
@@ -21,7 +38,10 @@ function getGoal($accId) {
 
    $row = mysql_fetch_array($result);
 
-   return $row['amount'];
+   if (mysql_num_rows($result) == 0)
+      return 0;
+   else
+      return $row['amount'];
 }
 
 function getBalance($accId) {
@@ -62,7 +82,7 @@ function getBalance($accId) {
 
 $total = 0;
 
-$query = sprintf("SELECT * FROM Accounts WHERE userId = %d ORDER BY accId", $_SESSION['this_id']);
+$query = sprintf("SELECT accId, accName FROM Accounts WHERE userId = %d ORDER BY accId", $_SESSION['this_id']);
 $result = mysql_query($query);
 
 while ($row = mysql_fetch_array($result)) {
@@ -70,14 +90,24 @@ while ($row = mysql_fetch_array($result)) {
    $name = $row['accName'];
    $balance = getBalance($id);
    $total = $total + $balance;
-   $progress = getProgress($id);
-   $goal = getGoal($id);
+   $progress = getProgress($row['accId']);
+   $goal = getGoal($row['accId']);
 ?>
 
       <tr>
          <td><a href="?p=transactions&amp;acc=<?php echo $id; ?>"><?php echo $name; ?></a></td>
          <td><?php echo amtToStrColor($balance); ?></td>
-         <td><?php echo amtToStr($progress) . "/" . amtToStr($goal); ?></td>
+         <td>
+<?php
+if ($goal) {
+?>
+            <?php echo amtToStrColor($progress) . " / " . amtToStr($goal); ?>
+<?php
+}
+else { ?>
+            No primary goal set
+<?php } ?>
+         </td>
       </tr>
 
 <?php } ?>

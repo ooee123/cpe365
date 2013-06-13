@@ -16,10 +16,6 @@ if (isset($_POST['new'])) {
       $error = errorMsg("Please fill out all of the required fields.");
    }
 
-   if (strlen($this_name) > MAX_LEN) {
-      $error = errorMsg("Account name must be less than 32 characters.");
-   }
-
    if (!$error) {
       $attr = array("userId", "accName", "accType");
       $type = array("int", "string", "string");
@@ -27,6 +23,11 @@ if (isset($_POST['new'])) {
       $query = constructInsert("Accounts", $attr, $type);
 
       mysql_query($query);
+
+      if (mysql_errno == 0)
+         header('location:?p=summary');
+      else
+         errorMsg("Something bad happened...");
    }
 }
 
@@ -55,7 +56,7 @@ if (isset($_POST['new'])) {
    <div class="row">
       <div class="one half centered padded">
          <label for="accName">Account Name*</label>
-         <input type="text" name="accName" id="accName" value="<?php echo $this_name; ?>" placeholder="account name" />
+         <input type="text" maxlength="32" name="accName" id="accName" value="<?php echo $this_name; ?>" placeholder="account name" />
       </div>
    </div>
 

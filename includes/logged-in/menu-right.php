@@ -1,14 +1,4 @@
-<?php if ($include) {
-
-$fAccount = clean($_GET['id']);
-$fMonth = clean($_GET['month']);
-$fYear = clean($_GET['year']);
-$fAmount = clean($_GET['amt']);
-$fCategory = clean($_GET['cat']);
-$fType = clean($_GET['type']);
-$fDesc = clean($_GET['desc']);
-
-?>
+<?php if ($include) { ?>
 
 <div class="one fifth pad-left">
 

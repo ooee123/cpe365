@@ -15,18 +15,26 @@ function getName() {
     $_SESSION['this_id']);
    $result = mysql_query($query);
 
-   while ($row = mysql_fetch_array($result)) {
-      $firstName = $row['firstName'];
-      $lastName = $row['lastName'];
-      $nickName = $row['nickName'];
-   }
+   $row = mysql_fetch_array($result);
 
-   if ($nickName) {
+   $firstName = $row['firstName'];
+   $lastName = $row['lastName'];
+   $nickName = $row['nickName'];
+
+   if ($nickName)
       return $nickName;
-   }
-   else {
+   else
       return $firstName . ' ' . $lastName;
-   }
+}
+
+function getAccount($id) {
+   $query = sprintf("SELECT accId, accName FROM Accounts WHERE userId = %d AND accId = %d",
+    $_SESSION['this_id'], $id);
+   $result = mysql_query($query);
+
+   $row = mysql_fetch_array($result);
+
+   return $row['accName'];
 }
 
 function errorMsg($msg) {

@@ -1,5 +1,13 @@
 <?php if ($include) {
 
+$fAccount = clean($_GET['acc']);
+$fMonth = clean($_GET['month']);
+$fYear = clean($_GET['year']);
+$fAmount = clean($_GET['amt']);
+$fCategory = clean($_GET['cat']);
+$fType = clean($_GET['type']);
+$fDesc = clean($_GET['desc']);
+
 if (isset($_POST['filter'])) {
    $fAccount = clean($_POST['accId']);
    $fMonth = clean($_POST['month']);
@@ -42,7 +50,7 @@ else if (isset($_POST['reset'])) {
 
 ?>
 
-<h2 class="AverageSans">Recent Transactions</h2>
+<h2 class="AverageSans"><?php echo $fAccount ? getAccount($fAccount) . "\n" : "Recent Transactions\n"; ?></h2>
 
 <div class="four fifths">
 
@@ -88,6 +96,10 @@ while ($row = mysql_fetch_array($result)) {
 
    </tbody>
 </table>
+
+<?php if (mysql_num_rows($result) == 0) { ?>
+<p class="padded">No transactions to show.</p>
+<?php } ?>
 
 <input type="submit" name="delete" value="Delete Selected" class="gap-top" />
 

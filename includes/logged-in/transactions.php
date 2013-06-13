@@ -1,7 +1,6 @@
 <?php if ($include) {
 
 $action = clean($_GET['a']);
-$edit = clean($_GET['id']);
 
 if ($action == 'new') {
    include($in_path . 'transactions-new.php');
