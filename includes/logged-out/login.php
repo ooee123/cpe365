@@ -22,7 +22,7 @@ if (isset($_POST['login'])) {
 }
 ?>
 
-<form method="post" action="?p=login" class="gapped triple">
+<form method="post" class="gapped triple">
 
    <div class="row padded">
       <input type="text" name="username" placeholder="username"

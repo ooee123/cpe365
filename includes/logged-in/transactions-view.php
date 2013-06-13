@@ -1,8 +1,54 @@
-<?php if ($include) { ?>
+<?php if ($include) {
+
+if (isset($_POST['filter'])) {
+   $fAccount = clean($_POST['accId']);
+   $fMonth = clean($_POST['month']);
+   $fYear = clean($_POST['year']);
+   $fAmount = clean($_POST['amount']);
+   $fCategory = clean($_POST['category']);
+   $fType = clean($_POST['transaction']);
+   $fDesc = clean($_POST['description']);
+
+   if ($fAccount)
+      $url = $url . "&acc=" . $fAccount;
+   if ($fMonth)
+      $url = $url . "&month=" . $fMonth;
+   if ($fYear)
+      $url = $url . "&year=" . $fYear;
+   if ($fAmount)
+      $url = $url . "&amt=" . $fAmount;
+   if ($fCategory)
+      $url = $url . "&cat=" . $fCategory;
+   if ($fType)
+      $url = $url . "&type=" . $fType;
+   if ($fDesc)
+      $url = $url . "&desc=" . $fDesc;
+
+   header('location:?p=transactions' . $url);
+}
+else if (isset($_POST['delete'])) {
+   $query = constructDelete();
+
+   mysql_query($query);
+
+   if (mysql_errno == 0)
+      notifyMsg("Transactions deleted.");
+   else
+      errorMsg("Something bad happened...");
+}
+else if (isset($_POST['reset'])) {
+   header('location:?p=transactions');
+}
+
+?>
 
 <h2 class="AverageSans">Recent Transactions</h2>
 
-<table class="four fifths">
+<div class="four fifths">
+
+<form method="post" action="">
+
+<table>
    <thead style="font-size: 12px;">
       <tr>
          <th></th>
@@ -13,11 +59,9 @@
       </tr>
    </thead>
    <tbody>
-   <form method="post" action="">
-
 <?php
 
-$select = "SELECT payDate, paidToFrom, amount, c.category FROM Transactions t, Categories c";
+$select = "SELECT transId, payDate, paidToFrom, amount, c.category, description FROM Transactions t, Categories c";
 $where = constructWhere() . " AND t.category = c.catId";
 $order = constructOrder();
 $limit = " LIMIT 30";
@@ -26,22 +70,29 @@ $query = $select . $where . $order . $limit;
 $result = mysql_query($query);
 
 while ($row = mysql_fetch_array($result)) {
+   $id = $row['transId'];
    $date = $row['payDate'];
    $for = $row['paidToFrom'];
    $amount = amtToStrColor($row['amount']);
    $category = $row['category'];
+   $description = $row['description'];
 ?>
       <tr>
-         <td><input type="checkbox" /></td>
+         <td><input type="checkbox" name="transId[]" value="<?php echo $id; ?>" /></td>
          <td><?php echo $date; ?></td>
-         <td><?php echo $for; ?></td>
+         <td class="tooltip" title="<?php echo $description; ?>"><a href="?p=transactions&amp;id=<?php echo $id; ?>"><?php echo $for; ?></a></td>
          <td><?php echo $amount; ?></td>
          <td><?php echo $category; ?></td>
       </tr>
 <?php } ?>
 
-   </form>
    </tbody>
 </table>
+
+<input type="submit" name="delete" value="Delete Selected" class="gap-top" />
+
+</form>
+
+</div>
 
 <?php } ?>

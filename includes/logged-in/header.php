@@ -30,16 +30,17 @@
    <li class="menu one fifth">
       <a href="?p=transactions">Transactions</a>
       <ul>
-         <li><a href="#">Add Transaction</a></li>
-         <li><a href="?p=transactions">View History</a></li>
+         <li><a href="?p=transactions&amp;a=new">Add Transaction</a></li>
+         <li><a href="?p=transactions">Recent Transactions</a></li>
       </ul>
    </li>
    <li class="menu one fifth">
       <a href="#">Accounts</a>
       <ul>
          <li><a href="?p=accounts&amp;a=new">Add an Account</a></li>
-         <li><a href="#">Account Settings</a></li>
-         <li><a href="#">Budgets</a></li>
+         <li><a href="?p=accounts&amp;a=edit">Edit an Account</a></li>
+         <li><a href="?p=goals&amp;a=new">Set a Goal</a></li>
+         <li><a href="?p=goals">View Goals</a></li>
       </ul>
    </li>
    <li class="one fifth"><a href="?p=settings">User Settings</a></li>

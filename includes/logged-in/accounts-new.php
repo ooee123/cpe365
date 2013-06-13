@@ -26,14 +26,13 @@ if (isset($_POST['new'])) {
 
       $query = constructInsert("Accounts", $attr, $type);
 
-      echo $query;
       mysql_query($query);
    }
 }
 
 ?>
 
-<form method="post" action="?p=accounts&amp;a=new" class="">
+<form method="post">
 
    <input type="hidden" name="userId" value="<?php echo $_SESSION['this_id']; ?>" />
 

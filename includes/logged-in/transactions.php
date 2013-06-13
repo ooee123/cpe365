@@ -1,15 +1,13 @@
 <?php if ($include) {
 
-$action = $_GET['a'];
+$action = clean($_GET['a']);
+$edit = clean($_GET['id']);
 
 if ($action == 'new') {
-
+   include($in_path . 'transactions-new.php');
 }
-else if ($action == 'edit') {
-
-}
-else if ($action == 'delete') {
-
+else if (isset($_GET['id'])) {
+   include($in_path . 'transactions-edit.php');
 }
 else {
    require_once($in_path . 'menu-left.php');

@@ -35,6 +35,12 @@ function errorMsg($msg) {
    return true;
 }
 
+function notifyMsg($msg) {
+   echo "<p class=\"success message gapped triple\">" . $msg . "</p>";
+
+   return true;
+}
+
 function amtToStr($cents) {
    $str = sprintf("$%.2f", abs($cents / 100));
 
@@ -72,12 +78,17 @@ function checked($cur, $toCheck) {
    }
 }
 
+function selected($cur, $toCheck) {
+   if ($cur == $toCheck) {
+      echo "selected";
+   }
+}
+
 function constructInsert($table, $attArray, $typeArray) {
    $validAttArray = array();
    $validTypeArray = array();
 
    for ($i = 0; $i < count($attArray); $i++) {
-      echo '(' . $_POST[$attArray[$i]] . ')';
       if (!empty($_POST[$attArray[$i]])) {
          array_push($validAttArray, $attArray[$i]);
          array_push($validTypeArray, $typeArray[$i]);
@@ -123,12 +134,14 @@ function formatValues($attArray, $typeArray) {
          break; 
       case "transaction": 
          $amount = clean($_POST[$attArray[$i]]);
-         $transaction = clean($_POST["transaction"]);
-
-         if ($transaction == "withdrawal") { 
+         sscanf($amount, "%d.%d", $dollars, $cents);
+         $amount = $dollars * 100 + $cents;
+         $transaction = isset($_POST['transaction']) ? clean($_POST["transaction"]) : NULL;
+ 
+         if ($transaction == "withdrawal" || $transaction == "withdrawals") { 
             $amount = -1 * $amount; 
          }
-         
+          
          $query = $query . $amount; 
          break;
       default: 
@@ -144,12 +157,66 @@ function formatValues($attArray, $typeArray) {
    return $query; 
 }
 
+function constructUpdate($table, $attArray, $typeArray) {
+   $queries = array();
+   $update = "UPDATE " . $table;
+   $where = " WHERE id = ";
+
+   for ($i = 0; $i < count($attArray); $i++) {
+      if (!empty($_POST[$attArray[$i]])) {
+         $set = constructSet($attArray[$i], $typeArray[$i]);
+         $where = " WHERE id = " . $_SESSION['this_id'];
+         array_push($queries, $update . $set . $where);
+      }
+   }
+
+   return $queries;
+}
+
+function constructSet($att, $type) {
+   if ($type == "date") {
+      return " SET " . $att . " = DATE('" . $_POST[$att] . "')";
+   }
+   else if ($type == "string") {
+      if (empty($_POST[$att])) {
+         return " SET " . $att . " = NULL";
+      }
+      return " SET " . $att . " = '" . $_POST[$att] . "'";
+   }
+   else if ($type == "category") {
+      return " SET " . $att . " = " . $_POST[$att];
+   }
+   else if ($type == "transaction") {
+      $amount = clean($_POST[$att]);
+      sscanf($amount, "%d.%d", $dollars, $cents);
+      $amount = $dollars * 100 + $cents;
+      $transaction = isset($_POST['transaction']) ? clean($_POST["transaction"]) : NULL;
+       
+      if ($transaction == "withdrawal" || $transaction == "withdrawals") {
+         $amount = -1 * $amount;
+      }
+      return " SET " . $att . " = " . $amount;
+   }
+   return " SET " . $att . " = " . $_POST[$att];
+}
+
 /*
- * TRANSACTION FILTER
+ * TRANSACTIONS
  */
 
+function constructDelete() {
+   $delete = "DELETE FROM Transactions WHERE 0 ";
+   $transId = $_POST['transId'];
+
+   for ($i = 0; $i < count($transId); $i++) {
+      $delete = $delete . " OR transId = " . $transId[$i];
+   }
+
+   return $delete;
+}
+
 function constructWhere() {
-   $fAccount = clean($_GET['id']);
+   $fAccount = clean($_GET['acc']);
    $fMonth = clean($_GET['month']);
    $fYear = clean($_GET['year']);
    $fAmount = clean($_GET['amt']);
@@ -172,7 +239,7 @@ function constructWhere() {
 function constructOrder() {
    $fOrder = clean($_GET['order']);
 
-   if (isset($fOrder)) {
+   if (!empty($fOrder)) {
 
    }
    else {
@@ -214,9 +281,9 @@ function whereCategory($fCategory) {
 
 function whereTransaction($fType) {
    if (!empty($fType)) {
-      if ($transaction == "withdrawals" || $transaction == "withdrawal")
+      if ($fType == "withdrawals" || $fType == "withdrawal")
          return " AND amount < 0";
-      else if ($transaction == "deposits" || $transaction == "deposit")
+      else if ($fType == "deposits" || $fType == "deposit")
          return " AND amount > 0";
    }
 }

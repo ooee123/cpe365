@@ -1,5 +1,29 @@
 <?php if ($include) {
 
+function getProgress($accId) {
+   $select = "SELECT SUM(t.amount) AS progress";
+   $from = " FROM Accounts a, Goals g, Transactions t";
+   $where = " WHERE t.payDate BETWEEN g.startDate AND g.endDate AND t.accId = a.accId AND g.goalId = a.goalId AND a.accId = " . $accId;
+   $query = $select . $from . $where;
+   $result = mysql_query($query);
+
+   $row = mysql_fetch_array($result);
+
+   return $row['progress'];
+}
+ 
+function getGoal($accId) {
+   $select = "SELECT amount";
+   $from = " FROM Accounts, Goals";
+   $where = " WHERE Accounts.goalId = Goals.goalId AND Accounts.accId = " . $accId;
+   $query = $select . $from . $where;
+   $result = mysql_query($query);
+
+   $row = mysql_fetch_array($result);
+
+   return $row['amount'];
+}
+
 function getBalance($accId) {
    $balance = 0;
 
@@ -42,16 +66,18 @@ $query = sprintf("SELECT * FROM Accounts WHERE userId = %d ORDER BY accId", $_SE
 $result = mysql_query($query);
 
 while ($row = mysql_fetch_array($result)) {
+   $id = $row['accId'];
    $name = $row['accName'];
-   $balance = getBalance($row['accId']);
+   $balance = getBalance($id);
    $total = $total + $balance;
-
+   $progress = getProgress($id);
+   $goal = getGoal($id);
 ?>
 
       <tr>
-         <td><a href="?p=transactions&amp;sort=account&amp;q=1"><?php echo $name; ?></a></td>
+         <td><a href="?p=transactions&amp;acc=<?php echo $id; ?>"><?php echo $name; ?></a></td>
          <td><?php echo amtToStrColor($balance); ?></td>
-         <td></td>
+         <td><?php echo amtToStr($progress) . "/" . amtToStr($goal); ?></td>
       </tr>
 
 <?php } ?>
