@@ -1,0 +1,9 @@
+things to fix:
+
+x readme
+x delete (injection opportunity)
+x floating echo debug statements
+- salt passwords
+x description search
+- circular dependency of relation
+- enum 'checking', 'savings'

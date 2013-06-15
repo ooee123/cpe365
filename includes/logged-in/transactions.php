@@ -1,4 +1,17 @@
-<?php if ($include) {
+<?php if ($include) { ?>
+
+<?php
+
+function constructDelete() {
+   $delete = "DELETE FROM Transactions WHERE 0 ";
+   $transId = $_POST['transId'];
+
+   for ($i = 0; $i < count($transId); $i++) {
+      $delete = $delete . " OR transId = " . clean($transId[$i]);
+   }
+
+   return $delete;
+}
 
 $action = clean($_GET['a']);
 
@@ -9,9 +22,8 @@ else if (isset($_GET['id'])) {
    include($in_path . 'transactions-edit.php');
 }
 else {
-   require_once($in_path . 'menu-left.php');
    include($in_path . 'transactions-view.php');
-   require_once($in_path . 'menu-right.php');
+   require_once($in_path . 'transactions-menu.php');
 }
 
 ?>

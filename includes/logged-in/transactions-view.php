@@ -36,11 +36,10 @@ if (isset($_POST['filter'])) {
 }
 else if (isset($_POST['delete'])) {
    $query = constructDelete();
-
    mysql_query($query);
 
    if (mysql_errno == 0)
-      notifyMsg("Transactions deleted.");
+      notifyMsg("Selected transactions deleted.");
    else
       errorMsg("Something bad happened...");
 }
@@ -54,7 +53,7 @@ else if (isset($_POST['reset'])) {
 
 <div class="four fifths">
 
-<form method="post" action="">
+<form method="post">
 
 <table>
    <thead style="font-size: 12px;">
@@ -64,10 +63,13 @@ else if (isset($_POST['reset'])) {
          <th>Transaction</th>
          <th>Amount</th>
          <th>Category</th>
+         <th></th>
       </tr>
    </thead>
    <tbody>
 <?php
+
+$total = 0;
 
 $select = "SELECT transId, payDate, paidToFrom, amount, c.category, description FROM Transactions t, Categories c";
 $where = constructWhere() . " AND t.category = c.catId";
@@ -81,19 +83,30 @@ while ($row = mysql_fetch_array($result)) {
    $id = $row['transId'];
    $date = $row['payDate'];
    $for = $row['paidToFrom'];
-   $amount = amtToStrColor($row['amount']);
+   $amount = $row['amount'];
    $category = $row['category'];
    $description = $row['description'];
+
+   $total = $total + $amount;
 ?>
-      <tr>
+      <tr class="tooltip" title="<?php echo $description; ?>">
          <td><input type="checkbox" name="transId[]" value="<?php echo $id; ?>" /></td>
          <td><?php echo $date; ?></td>
-         <td class="tooltip" title="<?php echo $description; ?>"><a href="?p=transactions&amp;id=<?php echo $id; ?>"><?php echo $for; ?></a></td>
-         <td><?php echo $amount; ?></td>
+         <td><?php echo $for; ?></td>
+         <td><?php echo amtToStrColor($amount); ?></td>
          <td><?php echo $category; ?></td>
+         <td><a href="?p=transactions&amp;id=<?php echo $id; ?>"><i class="icon-edit"></i></a> </td>
       </tr>
 <?php } ?>
 
+      <tr style="font-weight: bold;">
+         <td></td>
+         <td></td>
+         <td></td>
+         <td><?php echo amtToStrColor($total); ?></td>
+         <td></td>
+         <td></td>
+      </tr>
    </tbody>
 </table>
 

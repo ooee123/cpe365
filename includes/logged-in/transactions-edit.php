@@ -26,7 +26,8 @@ else if (isset($_POST['cancel'])) {
    header('location:?p=transactions');
 }
 
-$query = sprintf("SELECT transId FROM Accounts a, Transactions t WHERE userId = %d AND t.accId = a.accId AND transId = %d", $_SESSION['this_id'], $id);
+$query = sprintf("SELECT transId FROM Accounts a, Transactions t WHERE userId = %d AND t.accId = a.accId AND transId = %d",
+ $_SESSION['this_id'], $id);
 $result = mysql_query($query);
 
 $row = mysql_fetch_array($result);

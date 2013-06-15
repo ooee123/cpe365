@@ -15,8 +15,6 @@ if (isset($_POST['save'])) {
       $typeArray = array("string", "string", "string");
       $queries = constructUpdate("Users", $attArray, $typeArray);
 
-      print_r(array_values($queries));
-
       for ($i = 0; $i < count($queries); $i++) {
          mysql_query($queries[$i]);
       }

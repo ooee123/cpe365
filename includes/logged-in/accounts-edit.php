@@ -5,7 +5,22 @@
 <?php
 
 if (isset($_POST['select'])) {
-   header('location:?p=accounts&id=' . $_POST['accId']);
+   header('location:?p=accounts&id=' . clean($_POST['accId']));
+}
+
+if (isset($_POST['delete'])) {
+   $queries = deleteAccount(clean($_POST['accId']));
+   $errors = 0;
+
+   for ($i = 0; $i < count($queries); $i++) {
+      mysql_query($queries[$i]);
+      $errors += mysql_errno();
+   }
+
+   if ($errors == 0)
+      notifyMsg("Account deleted.");
+   else
+      errorMsg("Deletion unsuccessful.");
 }
 
 if (isset($_GET['id'])) {
@@ -113,7 +128,8 @@ if (isset($_GET['id'])) {
    </div>
 
    <div class="align-center">
-      <input type="submit" name="select" value="Select Account" />
+      <input type="submit" name="select" value="Edit Account" />
+      <input type="submit" name="delete" value="Delete Account" class="asphalt" />
    </div>
 
 </form>

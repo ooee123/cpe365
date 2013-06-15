@@ -65,6 +65,11 @@ function amtToStrColor($cents) {
       return amtToStr($cents);
 }
 
+function defaultGoalFlag($default, $id) {
+   if ($default == $id)
+      return " <strong>[Primary]</strong>";
+}
+
 /*
  * UTILITIES
  */
@@ -91,6 +96,108 @@ function selected($cur, $toCheck) {
       echo "selected";
    }
 }
+
+/*
+ * SUMMARY
+ */
+
+function getAccType($accId) {
+   $query = "SELECT accType FROM Accounts WHERE accId = " . $accId;
+   $result = mysql_query($query);
+   $row = mysql_fetch_array($result);
+
+   return $row['accType'];
+}
+
+function getProgress($accId, $accType) {
+   $where = " WHERE t.payDate BETWEEN g.startDate AND g.endDate AND t.accId = a.accId AND g.goalId = a.goalId AND a.accId = " . $accId;
+   $from = " FROM Accounts a, Goals g, Transactions t";
+
+   if ($accType == "checking") {
+      $select = "SELECT ABS(SUM(t.amount)) AS progress";
+      $where = $where . " AND t.amount < 0";
+      $query = $select . $from . $where;
+      $result = mysql_query($query);
+
+      $row = mysql_fetch_array($result);
+
+      return $row['progress'];
+   }
+   else {
+      $select = "SELECT SUM(t.amount) AS progress";
+      $query = $select . $from . $where;
+      $result = mysql_query($query);
+
+      $row = mysql_fetch_array($result);
+
+      return $row['progress'];
+   }
+}
+
+function getDefaultGoal($accId) {
+   $select = "SELECT Accounts.goalId";
+   $from = " FROM Accounts, Goals";
+   $where = " WHERE Accounts.goalId = Goals.goalId AND Accounts.accId = " . $accId;
+   $query = $select . $from . $where;
+   $result = mysql_query($query);
+
+   $row = mysql_fetch_array($result);
+
+   return $row['goalId'];
+}
+ 
+function getGoal($accId) {
+   $select = "SELECT amount";
+   $from = " FROM Accounts, Goals";
+   $where = " WHERE Accounts.goalId = Goals.goalId AND Accounts.accId = " . $accId;
+   $query = $select . $from . $where;
+   $result = mysql_query($query);
+
+   $row = mysql_fetch_array($result);
+
+   if (mysql_num_rows($result) == 0)
+      return 0;
+   else
+      return $row['amount'];
+}
+
+function reportProgress($progress, $goal, $accType) {
+   if ($accType == "checking" && $progress > $goal) {
+      $report = "<span class=\"red\"><strong>" . amtToStr($progress) . "</strong></span>";
+   }
+   else if ($accType == "savings" && $progress >= $goal) {
+      $report = "<span class=\"green\"><strong>" . amtToStr($progress) . "</strong></span>";
+   }
+   else {
+      $report = amtToStr($progress);
+   }
+
+   return $report . " / " . amtToStr($goal);
+}
+
+function getBalance($accId) {
+   $balance = 0;
+
+   $query = sprintf("SELECT SUM(amount) AS total FROM Transactions WHERE accId = '%d'", $accId);
+   $result = mysql_query($query);
+
+   while ($row = mysql_fetch_array($result)) {
+      $balance = $balance + $row['total'];
+   }
+
+   $query = sprintf("SELECT SUM(amount) AS total FROM Transfers WHERE transferTo = '%d'", $accId);
+   $result = mysql_query($query);
+
+   while ($row = mysql_fetch_array($result)) {
+      $balance = $balance + $row['total'];
+   }
+
+   return $balance;
+}
+
+/*
+ * QUERY CONSTRUCTORS
+ */
 
 function constructInsert($table, $attArray, $typeArray) {
    $validAttArray = array();
@@ -183,16 +290,16 @@ function constructUpdate($table, $attArray, $typeArray) {
 
 function constructSet($att, $type) {
    if ($type == "date") {
-      return " SET " . $att . " = DATE('" . $_POST[$att] . "')";
+      return " SET " . $att . " = DATE('" . clean($_POST[$att]) . "')";
    }
    else if ($type == "string") {
       if (empty($_POST[$att])) {
          return " SET " . $att . " = NULL";
       }
-      return " SET " . $att . " = '" . $_POST[$att] . "'";
+      return " SET " . $att . " = '" . clean($_POST[$att]) . "'";
    }
    else if ($type == "category") {
-      return " SET " . $att . " = " . $_POST[$att];
+      return " SET " . $att . " = " . clean($_POST[$att]);
    }
    else if ($type == "transaction") {
       $amount = clean($_POST[$att]);
@@ -205,22 +312,7 @@ function constructSet($att, $type) {
       }
       return " SET " . $att . " = " . $amount;
    }
-   return " SET " . $att . " = " . $_POST[$att];
-}
-
-/*
- * TRANSACTIONS
- */
-
-function constructDelete() {
-   $delete = "DELETE FROM Transactions WHERE 0 ";
-   $transId = $_POST['transId'];
-
-   for ($i = 0; $i < count($transId); $i++) {
-      $delete = $delete . " OR transId = " . $transId[$i];
-   }
-
-   return $delete;
+   return " SET " . $att . " = " . clean($_POST[$att]);
 }
 
 function constructWhere() {
@@ -231,6 +323,9 @@ function constructWhere() {
    $fCategory = clean($_GET['cat']);
    $fType = clean($_GET['type']);
    $fDesc = clean($_GET['desc']);
+
+   $fDesc = str_replace('%', '\%', $fDesc);
+   $fDesc = str_replace('_', '\_', $fDesc);
 
    $where = " WHERE t.accId IN (SELECT accId FROM Accounts WHERE userId = " . $_SESSION['this_id'] . ")";
    $where = $where . whereAccId($fAccount);
@@ -245,14 +340,7 @@ function constructWhere() {
 }
 
 function constructOrder() {
-   $fOrder = clean($_GET['order']);
-
-   if (!empty($fOrder)) {
-
-   }
-   else {
-      return " ORDER BY payDate DESC";
-   }
+   return " ORDER BY payDate DESC";
 }
 
 function whereAccId($fAccount) {
@@ -294,6 +382,34 @@ function whereTransaction($fType) {
       else if ($fType == "deposits" || $fType == "deposit")
          return " AND amount > 0";
    }
+}
+
+function deleteAccount($accId) {
+   $queries = array();
+
+   /* Transaction deleting */
+   $delete = "DELETE FROM Transactions";
+   $where = " WHERE accId = " . $accId;
+   $query = $delete . $where;
+   array_push($queries, $query);
+    
+   /* Clear foreign key goalId in account */
+   $update = "UPDATE Accounts";
+   $set = " SET goalId = NULL";
+   $query = $update . $set . $where;
+   array_push($queries, $query);
+    
+   /* Goal deleting */
+   $delete = "DELETE FROM Goals";
+   $query = $delete . $where;
+   array_push($queries, $query);
+    
+   /* Delete account */
+   $delete = "DELETE FROM Accounts";
+   $query = $delete . $where;
+   array_push($queries, $query);
+ 
+   return $queries;
 }
 
 ?>
