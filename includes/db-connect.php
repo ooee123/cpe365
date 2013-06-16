@@ -1,9 +1,9 @@
 <?php
 
-$host = 'localhost';
-$user = 'jsuen';
-$pass = '';
-$db = 'Project';
+$host = 'csc-db0.csc.calpoly.edu';
+$user = 'kly04';
+$pass = 'password';
+$db = 'test';
 
 $connect = mysql_connect($host, $user, $pass) or die("Could not connect.");
 

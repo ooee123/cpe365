@@ -6,9 +6,8 @@ if (isset($_POST['new'])) {
    $startDate = $_POST['startDate'];
    $num = $_POST['num'];
    $period = $_POST['period'];
-   $endDate = date_add(date_create($startDate), DateInterval::createFromDateString($num . " " . $period));
 
-   $_POST['endDate'] = date_format($endDate, "Y-m-d");
+   $_POST['endDate'] = date("Y-m-d", strtotime($startDate . " + " . $num . " " . $period));
 
    $attArray = array("accId", "amount", "startDate", "endDate");
    $typeArray = array("int", "transaction", "date", "date");
